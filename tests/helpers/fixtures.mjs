@@ -34,8 +34,8 @@ export async function createFixtures(dir) {
   box(alphaSource, paths.transparent);
   box(alphaSource, paths.vp8, 'libvpx');
   generate(['-f', 'lavfi', '-i', 'color=c=blue:s=64x64:r=10:d=1', '-c:v', 'libvpx-vp9', '-threads', '1', '-deadline', 'realtime', '-y', paths.opaque]);
-  generate(['-f', 'lavfi', '-i', rgba, '-vf', 'format=yuva420p', '-c:v', 'libvpx-vp9', '-auto-alt-ref', '0', '-threads', '1', '-deadline', 'realtime', '-y', paths.alphaOpaque]);
-  generate(['-f', 'lavfi', '-i', alphaSource, '-vf', 'format=yuva420p', '-c:v', 'libvpx-vp9', '-auto-alt-ref', '0', '-threads', '1', '-deadline', 'realtime', '-y', paths.empty]);
+  generate(['-f', 'lavfi', '-i', rgba, '-vf', 'format=yuva420p', '-c:v', 'libvpx-vp9', '-lossless', '1', '-auto-alt-ref', '0', '-threads', '1', '-deadline', 'realtime', '-y', paths.alphaOpaque]);
+  generate(['-f', 'lavfi', '-i', alphaSource, '-vf', 'format=yuva420p', '-c:v', 'libvpx-vp9', '-lossless', '1', '-auto-alt-ref', '0', '-threads', '1', '-deadline', 'realtime', '-y', paths.empty]);
   generate(['-f', 'lavfi', '-i', 'color=c=blue@0.5:s=64x64:r=10:d=1,format=yuva444p10le', '-c:v', 'prores_ks', '-profile:v', '4444', '-threads', '1', '-pix_fmt', 'yuva444p10le', '-y', paths.prores]);
   generate(['-f', 'lavfi', '-i', 'color=c=blue:s=64x64:r=10:d=1', '-c:v', 'libx264', '-threads', '1', '-pix_fmt', 'yuv420p', '-y', paths.mp4]);
   generate(['-i', paths.mp4, '-c:v', 'copy', '-f', 'h264', '-y', paths.raw]);
