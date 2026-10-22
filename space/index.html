@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Inspect sampled WebM alpha pixels in your browser. Compare transparent and baked-checkerboard videos without uploading your file.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; media-src 'self' blob:; img-src 'self' blob: data:; connect-src 'none'; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Video Alpha Inspector — Is it really transparent?</title>
+  <link rel="stylesheet" href="./assets/style.css"><script type="module" src="./assets/app.js"></script>
+</head>
+<body>
+  <header><a class="brand" href="https://bgremover.online/" target="_blank" rel="noopener noreferrer"><span class="brand-icon" aria-hidden="true">α</span> BG Remover <span class="lab">/ open-source lab</span></a><nav aria-label="Project links"><a href="https://github.com/j-river/video-alpha-inspector" target="_blank" rel="noopener noreferrer">GitHub ↗</a><a href="https://bgremover.online/converters/" target="_blank" rel="noopener noreferrer">Video tools ↗</a></nav></header>
+  <main>
+    <div class="intro"><p class="eyebrow">SEE THROUGH THE CHECKERBOARD</p><h1>Is it really transparent?</h1><p class="lede">Inspect the alpha pixels your browser decodes. Compare backgrounds, explore known samples, and check a local WebM.</p><p class="privacy">● Your video stays on your device. No upload or API key.</p></div>
+    <div class="workspace">
+      <section class="panel source" aria-labelledby="source-title">
+        <p class="step">01 / CHOOSE A SOURCE</p><h2 id="source-title">Start with a known sample</h2>
+        <div class="sample-grid" role="group" aria-label="Synthetic video samples">
+          <button class="sample" type="button" data-sample="cutout" aria-pressed="true"><span class="sample-icon cutout" aria-hidden="true">●</span><span><strong>Transparent cutout</strong><small>Visible subject, clear surroundings</small></span></button>
+          <button class="sample" type="button" data-sample="checkerboard" aria-pressed="false"><span class="sample-icon checker" aria-hidden="true">▦</span><span><strong>Baked checkerboard</strong><small>Squares are opaque video pixels</small></span></button>
+          <button class="sample" type="button" data-sample="partial" aria-pressed="false"><span class="sample-icon partial" aria-hidden="true">◐</span><span><strong>Partial alpha</strong><small>A translucent subject</small></span></button>
+          <button class="sample" type="button" data-sample="empty" aria-pressed="false"><span class="sample-icon empty" aria-hidden="true">○</span><span><strong>Fully transparent</strong><small>No visible subject</small></span></button>
+        </div>
+        <div class="file-box"><label for="file">Or choose your own WebM</label><input id="file" type="file" accept=".webm,video/webm"><p class="hint">Local file · up to 64 MiB · 120 seconds · 4,096 px per side / 8 MP</p></div>
+        <p id="source-name" class="source-name"></p>
+        <div class="buttons"><button type="button" id="inspect" class="primary">Inspect again</button><button type="button" id="cancel" class="quiet" disabled>Cancel</button></div>
+        <p id="progress" role="status" aria-live="polite" class="progress">Preparing the sample…</p>
+        <div class="scope"><h3>Browser observation, with limits</h3><p>This samples four positions at 0%, 25%, 50% and 75%, downscaled to at most 512 px. It can miss small details or changes between samples.</p><p>“No transparency observed” may also mean the browser discarded alpha. A known-transparent control is checked first; it does not verify every codec or file. ProRes and HEVC alpha need another workflow.</p></div>
+      </section>
+      <section class="panel evidence" aria-labelledby="evidence-title">
+        <div class="panel-heading"><div><p class="step">02 / LOOK AT THE PIXELS</p><h2 id="evidence-title">Change what is underneath</h2></div><span id="badge" class="badge">Checking</span></div>
+        <div id="stage" class="stage" data-background="checker"><video id="video" muted playsinline controls preload="metadata" aria-label="Selected video preview"></video><p id="stage-placeholder">Choose a sample or a local WebM.</p></div>
+        <div class="backgrounds" role="group" aria-label="Preview background"><button type="button" data-background="checker" aria-pressed="true">Checker</button><button type="button" data-background="light" aria-pressed="false">Light</button><button type="button" data-background="dark" aria-pressed="false">Dark</button><button type="button" data-background="pink" aria-pressed="false">Pink</button></div>
+        <div class="verdict"><p class="eyebrow">SAMPLED BROWSER RESULT</p><h3 id="verdict-title">Reading video…</h3><p id="verdict-detail">The browser's native decoder supplies the pixels. FFmpeg is not running in this page.</p></div>
+        <p id="video-info" class="hint"></p><div id="frames" class="frames" aria-label="Sampled frames and alpha masks"></div>
+        <p class="hint">Alpha masks: black = alpha 0, white = alpha 255, grey = partial alpha. CSS backgrounds do not change the measured pixels.</p>
+        <div class="report-row"><button type="button" id="download" class="primary" disabled>Download JSON report</button><span class="hint">Contains statistics, not your filename or video.</span></div>
+        <details><summary>Thresholds and report JSON</summary><p class="hint">Alpha &lt;245 counts as transparent; alpha &gt;10 counts as visible. Each needs at least 1% of a sampled frame. The two sets overlap for partial alpha.</p><label for="report">Browser observation report</label><textarea id="report" readonly spellcheck="false"></textarea></details>
+      </section>
+    </div>
+    <section class="guide"><div><p class="eyebrow">CHECK THE NEXT LAYER</p><h2>Use FFmpeg to inspect the file independently.</h2><p>The open-source Node.js inspector explicitly uses libvpx for WebM alpha. It also supports VP8, ProRes 4444 and an H.264 opaque control. Clone the repo, build it, then run:</p><pre><code>node dist/cli.js ./cutout.webm --json</code></pre><p><a href="https://github.com/j-river/video-alpha-inspector#run-from-github" target="_blank" rel="noopener noreferrer">Requirements and installation ↗</a> · npm publication is pending.</p></div><div><h3>Need to remove a background?</h3><p>This inspector measures existing alpha. For background removal and export tools, visit <a href="https://bgremover.online/" target="_blank" rel="noopener noreferrer">BG Remover Online ↗</a>, or try its <a href="https://bgremover.online/converters/transparency-checker/" target="_blank" rel="noopener noreferrer">transparency checker ↗</a>.</p><p class="hint">A nonzero alpha result does not measure cutout quality or guarantee playback in another editor. Always test in your intended destination.</p></div></section>
+  </main>
+  <footer><span>video-alpha-inspector · MIT licensed</span><a href="https://github.com/j-river/video-alpha-inspector" target="_blank" rel="noopener noreferrer">Source & issues ↗</a><span>The app has no analytics, uploads or persistent storage. Hosting providers may log page requests. All bundled clips are synthetic.</span></footer>
+</body></html>

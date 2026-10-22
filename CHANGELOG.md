@@ -7,3 +7,5 @@
 - Separate metadata hints, decoded pixel statistics and sampling outcomes.
 - File/dimension/duration/output budgets, total timeout and cancellation.
 - ESM, CommonJS, declarations, CLI, generated-media tests and installable tarball.
+- Browser-safe alpha statistics entry and a local WebM playground with known
+  synthetic controls, alpha masks, background switching and JSON reports.

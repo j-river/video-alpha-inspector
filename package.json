@@ -18,10 +18,11 @@
       "import": { "types": "./dist/index.d.ts", "default": "./dist/index.js" },
       "require": { "types": "./dist/index.d.cts", "default": "./dist/index.cjs" }
     },
+    "./browser": { "types": "./dist/browser.d.ts", "default": "./dist/browser.js" },
     "./package.json": "./package.json"
   },
   "bin": { "video-alpha": "./dist/cli.js" },
-  "files": ["dist/index.js", "dist/index.cjs", "dist/index.d.ts", "dist/index.d.cts", "dist/cli.js", "README.md", "LICENSE", "CHANGELOG.md"],
+  "files": ["dist/index.js", "dist/index.cjs", "dist/index.d.ts", "dist/index.d.cts", "dist/cli.js", "dist/alpha.d.ts", "dist/alpha.d.cts", "dist/browser.js", "dist/browser.d.ts", "README.md", "LICENSE", "CHANGELOG.md"],
   "sideEffects": false,
   "scripts": {
     "build": "node scripts/build.mjs",
@@ -30,6 +31,9 @@
     "check": "npm run build && npm run typecheck && npm test",
     "test:package": "node scripts/test-package.mjs",
     "demo": "npm run build && node examples/inspect.mjs",
+    "build:space": "tsc -p space/tsconfig.json && node scripts/build-space.mjs",
+    "demo:space": "node scripts/serve-space.mjs",
+    "test:space": "npm run build:space && node scripts/test-space.mjs",
     "prepack": "npm run build"
   },
   "devDependencies": { "@types/node": "24.10.0", "esbuild": "0.28.2", "typescript": "5.9.3" },

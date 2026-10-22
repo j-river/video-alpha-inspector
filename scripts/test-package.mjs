@@ -3,6 +3,7 @@ import { execFileSync } from 'node:child_process';
 import { mkdtemp, mkdir, readFile, writeFile, rm, copyFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { generate } from '../tests/helpers/fixtures.mjs';
 
 const root = process.cwd();
@@ -13,7 +14,7 @@ const npmRun = (args, cwd) => run([npm, ...args], cwd);
 npmRun(['run', 'build']);
 await mkdir('.artifacts', { recursive: true });
 const [pack] = JSON.parse(npmRun(['pack', '--ignore-scripts', '--json', '--pack-destination', '.artifacts']));
-const expected = ['CHANGELOG.md', 'LICENSE', 'README.md', 'dist/cli.js', 'dist/index.cjs', 'dist/index.d.cts', 'dist/index.d.ts', 'dist/index.js', 'package.json'].sort();
+const expected = ['CHANGELOG.md', 'LICENSE', 'README.md', 'dist/cli.js', 'dist/index.cjs', 'dist/index.d.cts', 'dist/index.d.ts', 'dist/index.js', 'dist/alpha.d.ts', 'dist/alpha.d.cts', 'dist/browser.js', 'dist/browser.d.ts', 'package.json'].sort();
 assert.deepEqual(pack.files.map(file => file.path).sort(), expected);
 assert.ok(pack.unpackedSize < 200_000);
 await writeFile('.artifacts/package-report.json', `${JSON.stringify(pack, null, 2)}\n`);
@@ -40,7 +41,9 @@ api.inspectVideoAlpha('./synthetic.webm',{sampleFractions:[0]}).then(r=>{assert.
   const cli = join(directory, 'node_modules/video-alpha-inspector', manifest.bin['video-alpha']);
   const cliReport = JSON.parse(run([cli, file, '--samples', '0', '--json', '--require-transparency'], directory));
   assert.equal(cliReport.status, 'transparency-detected');
-  for (const name of ['import.mts', 'require.cts']) await copyFile(resolve('tests/types', name), join(directory, name));
-  run([resolve('node_modules/typescript/bin/tsc'), '--strict', '--noEmit', '--target', 'ES2022', '--module', 'NodeNext', '--moduleResolution', 'NodeNext', '--types', 'node', '--typeRoots', resolve('node_modules/@types'), 'import.mts', 'require.cts'], directory);
+  const browserApi = await import(pathToFileURL(join(directory, 'node_modules/video-alpha-inspector/dist/browser.js')).href);
+  assert.equal(browserApi.analyzeAlphaPlane(Uint8Array.of(0, 128, 255)).partialPixels, 1);
+  for (const name of ['import.mts', 'require.cts', 'browser.mts']) await copyFile(resolve('tests/types', name), join(directory, name));
+  run([resolve('node_modules/typescript/bin/tsc'), '--strict', '--noEmit', '--target', 'ES2022', '--module', 'NodeNext', '--moduleResolution', 'NodeNext', '--types', 'node', '--typeRoots', resolve('node_modules/@types'), 'import.mts', 'require.cts', 'browser.mts'], directory);
   console.log(`Installed tarball passed: ${pack.files.length} files, ${pack.size} bytes packed, ${pack.unpackedSize} bytes unpacked.`);
 } finally { await rm(directory, { recursive: true, force: true }); }

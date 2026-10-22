@@ -36,3 +36,4 @@ jobs:
       - run: npm ci --ignore-scripts --registry=https://registry.npmjs.org --no-audit --no-fund
       - run: npm run check
       - run: npm run test:package
+      - run: npm run test:space

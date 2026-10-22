@@ -124,8 +124,28 @@ const stats = analyzeAlphaPlane(Uint8Array.from([0, 128, 255]));
 ```
 
 The statistics also expose min/max/mean, fractions, and significance booleans.
-This package entry imports Node.js modules; a standalone browser entry is not
-included in v0.1.0.
+The main package entry imports Node.js modules. The `video-alpha-inspector/browser`
+entry exposes only `analyzeAlphaPlane`, `AlphaInspectionError` and their types,
+without Node.js imports. It does not supply a video decoder or run FFmpeg.
+In a source checkout, import from `./dist/browser.js` after building.
+
+### Browser alpha playground
+
+The [static playground source](space/) reads WebM samples with the browser's
+native video decoder and Canvas, then applies the same alpha statistics.
+It includes four generated controls, background switching, alpha masks and a
+JSON report download. Local videos remain in browser memory; no API key or
+upload is needed. Browser decoder behavior can differ from FFmpeg.
+
+```sh
+npm run build
+npm run test:space
+npm run demo:space
+```
+
+Open the printed localhost URL. To deploy a Static Hugging Face Space, upload
+only the ten files under `.artifacts/hf-space/`, retaining their directories.
+See the [Space card](space/README.md) for limits, privacy and interpretation.
 
 ### Limits, cancellation and errors
 
