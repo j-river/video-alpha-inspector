@@ -1,0 +1,46 @@
+import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
+import { mkdtemp, mkdir, readFile, writeFile, rm, copyFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
+import { generate } from '../tests/helpers/fixtures.mjs';
+
+const root = process.cwd();
+const npm = process.env.npm_execpath;
+assert.ok(npm, 'Run this check through npm run test:package.');
+const run = (args, cwd = root) => execFileSync(process.execPath, args, { cwd, encoding: 'utf8', windowsHide: true, timeout: 120_000 });
+const npmRun = (args, cwd) => run([npm, ...args], cwd);
+npmRun(['run', 'build']);
+await mkdir('.artifacts', { recursive: true });
+const [pack] = JSON.parse(npmRun(['pack', '--ignore-scripts', '--json', '--pack-destination', '.artifacts']));
+const expected = ['CHANGELOG.md', 'LICENSE', 'README.md', 'dist/cli.js', 'dist/index.cjs', 'dist/index.d.cts', 'dist/index.d.ts', 'dist/index.js', 'package.json'].sort();
+assert.deepEqual(pack.files.map(file => file.path).sort(), expected);
+assert.ok(pack.unpackedSize < 200_000);
+await writeFile('.artifacts/package-report.json', `${JSON.stringify(pack, null, 2)}\n`);
+const directory = await mkdtemp(join(tmpdir(), 'alpha-package-'));
+try {
+  await writeFile(join(directory, 'package.json'), '{"name":"alpha-package-check","version":"1.0.0","type":"module","private":true}');
+  const tarball = join(directory, pack.filename);
+  await copyFile(resolve('.artifacts', pack.filename), tarball);
+  npmRun(['install', tarball, '--offline', '--ignore-scripts', '--no-audit', '--no-fund', '--package-lock=false'], directory);
+  const file = join(directory, 'synthetic.webm');
+  generate(['-f', 'lavfi', '-i', 'color=c=blue@0.5:s=32x32:r=5:d=1,format=yuva420p', '-c:v', 'libvpx-vp9', '-auto-alt-ref', '0', '-threads', '1', '-deadline', 'realtime', '-y', file]);
+  await writeFile(join(directory, 'check.mjs'), `import assert from 'node:assert/strict';
+import { inspectVideoAlpha, analyzeAlphaPlane } from 'video-alpha-inspector';
+assert.equal(analyzeAlphaPlane(Uint8Array.of(0,255)).pixels,2);
+assert.equal((await inspectVideoAlpha('./synthetic.webm',{sampleFractions:[0]})).status,'transparency-detected');
+console.log('Installed ESM API passed');\n`);
+  await writeFile(join(directory, 'check.cjs'), `const assert=require('node:assert/strict');
+const api=require('video-alpha-inspector');
+assert.equal(api.analyzeAlphaPlane(Uint8Array.of(255)).opaquePixels,1);
+api.inspectVideoAlpha('./synthetic.webm',{sampleFractions:[0]}).then(r=>{assert.equal(r.status,'transparency-detected'); console.log('Installed CommonJS API passed');}).catch(e=>{console.error(e);process.exitCode=1;});\n`);
+  process.stdout.write(run(['check.mjs'], directory));
+  process.stdout.write(run(['check.cjs'], directory));
+  const manifest = JSON.parse(await readFile(join(directory, 'node_modules/video-alpha-inspector/package.json'), 'utf8'));
+  const cli = join(directory, 'node_modules/video-alpha-inspector', manifest.bin['video-alpha']);
+  const cliReport = JSON.parse(run([cli, file, '--samples', '0', '--json', '--require-transparency'], directory));
+  assert.equal(cliReport.status, 'transparency-detected');
+  for (const name of ['import.mts', 'require.cts']) await copyFile(resolve('tests/types', name), join(directory, name));
+  run([resolve('node_modules/typescript/bin/tsc'), '--strict', '--noEmit', '--target', 'ES2022', '--module', 'NodeNext', '--moduleResolution', 'NodeNext', '--types', 'node', '--typeRoots', resolve('node_modules/@types'), 'import.mts', 'require.cts'], directory);
+  console.log(`Installed tarball passed: ${pack.files.length} files, ${pack.size} bytes packed, ${pack.unpackedSize} bytes unpacked.`);
+} finally { await rm(directory, { recursive: true, force: true }); }

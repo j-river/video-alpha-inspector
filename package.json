@@ -1,0 +1,37 @@
+{
+  "name": "video-alpha-inspector",
+  "version": "0.1.0",
+  "description": "Inspect actual video transparency with bounded FFmpeg frame sampling, typed alpha statistics, and a JSON CLI.",
+  "type": "module",
+  "license": "MIT",
+  "author": "j-river",
+  "homepage": "https://bgremover.online/",
+  "repository": { "type": "git", "url": "git+https://github.com/j-river/video-alpha-inspector.git" },
+  "bugs": { "url": "https://github.com/j-river/video-alpha-inspector/issues" },
+  "keywords": ["video", "alpha", "transparency", "ffmpeg", "webm", "prores", "typescript"],
+  "engines": { "node": ">=22" },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": { "types": "./dist/index.d.ts", "default": "./dist/index.js" },
+      "require": { "types": "./dist/index.d.cts", "default": "./dist/index.cjs" }
+    },
+    "./package.json": "./package.json"
+  },
+  "bin": { "video-alpha": "./dist/cli.js" },
+  "files": ["dist/index.js", "dist/index.cjs", "dist/index.d.ts", "dist/index.d.cts", "dist/cli.js", "README.md", "LICENSE", "CHANGELOG.md"],
+  "sideEffects": false,
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc --noEmit && tsc -p tests/types/tsconfig.json --noEmit",
+    "test": "node --test --test-concurrency=1 tests/*.test.mjs",
+    "check": "npm run build && npm run typecheck && npm test",
+    "test:package": "node scripts/test-package.mjs",
+    "demo": "npm run build && node examples/inspect.mjs",
+    "prepack": "npm run build"
+  },
+  "devDependencies": { "@types/node": "24.10.0", "esbuild": "0.28.2", "typescript": "5.9.3" },
+  "publishConfig": { "access": "public", "registry": "https://registry.npmjs.org/" }
+}
