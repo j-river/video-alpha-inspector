@@ -17,14 +17,19 @@ for one-off files, converters that keep the alpha channel
 and [video background removal](https://bgremover.online/remove-video-background/)
 for footage that has no alpha yet.
 
-## Run from GitHub
+## Install
 
-**Not on npm yet.** Run it from a clone, or build a local tarball with `npm pack`.
+```sh
+npm install video-alpha-inspector
+npx video-alpha ./cutout.webm --json
+```
 
 Requirements: Node.js 22 or newer, FFmpeg and ffprobe on PATH. The FFmpeg build
 must include `libvpx-vp9` and `libvpx` decoders for VP9/VP8 alpha. Tests also
 require the `libvpx-vp9`, `libvpx`, `prores_ks` and `libx264` encoders.
 See the [official FFmpeg download page](https://ffmpeg.org/download.html) for builds.
+
+The command is `video-alpha`. To work on the source:
 
 ```sh
 git clone https://github.com/j-river/video-alpha-inspector.git
@@ -33,10 +38,6 @@ npm ci --ignore-scripts
 npm run check
 node dist/cli.js ./cutout.webm --json
 ```
-
-`npm pack` builds an installable local tarball. Install it in another project
-with `npm install /path/to/video-alpha-inspector-0.1.0.tgz`.
-After installation, the command is `video-alpha`.
 
 ## API
 
