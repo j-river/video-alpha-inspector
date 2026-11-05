@@ -8,15 +8,18 @@ Useful for export checks, transparent-video pipelines, and media-tool backends.
 The package has **no runtime npm dependencies**. FFmpeg and ffprobe are separate
 system requirements; no binaries are bundled or downloaded during installation.
 
-Need a ready-made workflow? [BG Remover Online](https://bgremover.online/)
-provides video background removal and a
-[transparency checker](https://bgremover.online/converters/transparency-checker/).
-This library was prepared for that workflow; deployment into the website is pending.
+Prefer a browser? [BG Remover Online](https://bgremover.online/) has a
+[video transparency checker](https://bgremover.online/converters/transparency-checker/)
+for one-off files, converters that keep the alpha channel
+([WebM to ProRes 4444](https://bgremover.online/converters/webm-to-prores/),
+[ProRes 4444 to WebM](https://bgremover.online/converters/prores-to-webm/),
+[PNG sequence to WebM](https://bgremover.online/converters/png-sequence-to-webm/)),
+and [video background removal](https://bgremover.online/remove-video-background/)
+for footage that has no alpha yet.
 
 ## Run from GitHub
 
-**Registry publication is pending.** The repository is usable now; there is no
-public npm installation command until the first registry release.
+**Not on npm yet.** Run it from a clone, or build a local tarball with `npm pack`.
 
 Requirements: Node.js 22 or newer, FFmpeg and ffprobe on PATH. The FFmpeg build
 must include `libvpx-vp9` and `libvpx` decoders for VP9/VP8 alpha. Tests also
